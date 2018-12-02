@@ -1,0 +1,60 @@
+Default OTA Profile
+	-If wifi creds don't work
+	-Starts as WiFi hotspot with OTA capabilities
+	-Profiles stored in FS
+
+Server Profile
+	-Web server
+	-config file with
+		example
+			{
+				"wifi_ssid": "string",
+				"wifi_passwd": "string",
+				"name":"string",
+
+				"Open door 1": {
+					"desc": "Opens the main door",
+					"uri": "/door/",
+					"analog": false,
+					"pin": [1, 2]
+				},
+				"Light 1": {
+					"desc": "dimmable light",
+					"uri": "/light1/",
+					"analog": true,
+					"pin": [3]
+				}
+			}
+	-Method that returns the config file to be parsed by outside app
+	-Service advertisement with IP broadcasting
+	-Get state of each pin as json
+	-change and reload config file
+Usage example :
+	Client App does service discovery to get the ip of the ESP8266s on the network
+		->	HttpGet on IP:80/GetConfig
+		<- JSON config
+	Parse JSON to get every action for each endpoints
+	Client app sends Get request to parsed URIs
+		ex: -> HttpGet on IP:80/uri?value=(0-255)
+		<- 200, 404 else 500
+
+----------------------------------------------------------------
+boot
+	-parse configFile for wifi creds
+	-connect to wifi
+		-fail : ESP8266 flashes itself into OTA hotspot and regularely tries to reconnect to wifi creds
+	-success:
+		-parse config file to save URIs into ram (faster handling)
+loop
+	-web handle loop
+		-on 404 handle REST
+
+Rest
+	-GetConfig
+	--Calls FS getConfig and returns the content of the config file
+
+FS
+	-GetConfig
+	--Reads the config file
+
+
